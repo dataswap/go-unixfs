@@ -49,6 +49,10 @@ type DagBuilderHelper struct {
 	offset uint64
 }
 
+func (db *DagBuilderHelper) SetOffset(o uint64) {
+	db.offset = o
+}
+
 // DagBuilderParams wraps configuration options to create a DagBuilderHelper
 // from a chunker.Splitter.
 //
