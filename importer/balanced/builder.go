@@ -131,7 +131,7 @@ import (
 //	  +=========+   +=========+   + - - - - +
 //
 // Deprecated: use github.com/ipfs/boxo/ipld/unixfs/importer/balanced.Layout
-func Layout(db *h.DagBuilderHelper) (ipld.Node, error) {
+func Layout(db h.Helper) (ipld.Node, error) {
 	if db.Done() {
 		// No data, return just an empty node.
 		root, err := db.NewLeafNode(nil, ft.TFile)
@@ -217,7 +217,7 @@ func Layout(db *h.DagBuilderHelper) (ipld.Node, error) {
 // seeking through the DAG when reading data later).
 //
 // warning: **children** pinned indirectly, but input node IS NOT pinned.
-func fillNodeRec(db *h.DagBuilderHelper, node *h.FSNodeOverDag, depth int) (filledNode ipld.Node, nodeFileSize uint64, err error) {
+func fillNodeRec(db h.Helper, node *h.FSNodeOverDag, depth int) (filledNode ipld.Node, nodeFileSize uint64, err error) {
 	if depth < 1 {
 		return nil, 0, errors.New("attempt to fillNode at depth < 1")
 	}

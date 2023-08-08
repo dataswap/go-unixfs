@@ -13,7 +13,7 @@ import (
 
 	cid "github.com/ipfs/go-cid"
 	chunker "github.com/ipfs/go-ipfs-chunker"
-	"github.com/ipfs/go-ipfs-files"
+	files "github.com/ipfs/go-ipfs-files"
 	pi "github.com/ipfs/go-ipfs-posinfo"
 	ipld "github.com/ipfs/go-ipld-format"
 )
@@ -334,7 +334,7 @@ func NewFSNFromDag(nd *dag.ProtoNode) (*FSNodeOverDag, error) {
 // `ft.FSNode` stores its file size (that is, not the size of the
 // node but the size of the file data that it is storing at the
 // UnixFS layer). The child is also stored in the `DAGService`.
-func (n *FSNodeOverDag) AddChild(child ipld.Node, fileSize uint64, db *DagBuilderHelper) error {
+func (n *FSNodeOverDag) AddChild(child ipld.Node, fileSize uint64, db Helper) error {
 	err := n.dag.AddNodeLink("", child)
 	if err != nil {
 		return err
@@ -346,7 +346,7 @@ func (n *FSNodeOverDag) AddChild(child ipld.Node, fileSize uint64, db *DagBuilde
 }
 
 // RemoveChild deletes the child node at the given index.
-func (n *FSNodeOverDag) RemoveChild(index int, dbh *DagBuilderHelper) {
+func (n *FSNodeOverDag) RemoveChild(index int, dbh Helper) {
 	n.file.RemoveBlockSize(index)
 	n.dag.SetLinks(append(n.dag.Links()[:index], n.dag.Links()[index+1:]...))
 }

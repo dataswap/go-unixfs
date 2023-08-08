@@ -2,6 +2,11 @@ package helpers
 
 import (
 	"fmt"
+
+	cid "github.com/ipfs/go-cid"
+	ipld "github.com/ipfs/go-ipld-format"
+	dag "github.com/ipfs/go-merkledag"
+	pb "github.com/ipfs/go-unixfs/pb"
 )
 
 // BlockSizeLimit specifies the maximum size an imported block can have.
@@ -35,3 +40,18 @@ var DefaultLinksPerBlock = roughLinkBlockSize / roughLinkSize
 //
 // Deprecated: use github.com/ipfs/boxo/ipld/unixfs/importer/helpers.ErrSizeLimitExceeded
 var ErrSizeLimitExceeded = fmt.Errorf("object size limit exceeded")
+
+type Helper interface {
+	Done() bool
+	Next() ([]byte, error)
+	GetDagServ() ipld.DAGService
+	GetCidBuilder() cid.Builder
+	NewLeafNode(data []byte, fsNodeType pb.Data_DataType) (ipld.Node, error)
+	FillNodeLayer(node *FSNodeOverDag) error
+	NewLeafDataNode(fsNodeType pb.Data_DataType) (node ipld.Node, dataSize uint64, err error)
+	ProcessFileStore(node ipld.Node, dataSize uint64) ipld.Node
+	Add(node ipld.Node) error
+	Maxlinks() int
+	NewFSNodeOverDag(fsNodeType pb.Data_DataType) *FSNodeOverDag
+	NewFSNFromDag(nd *dag.ProtoNode) (*FSNodeOverDag, error)
+}
