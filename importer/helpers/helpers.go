@@ -54,4 +54,5 @@ type Helper interface {
 	Maxlinks() int
 	NewFSNodeOverDag(fsNodeType pb.Data_DataType) *FSNodeOverDag
 	NewFSNFromDag(nd *dag.ProtoNode) (*FSNodeOverDag, error)
+	SetOffset(o uint64)
 }
