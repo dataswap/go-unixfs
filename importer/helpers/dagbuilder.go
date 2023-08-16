@@ -226,7 +226,6 @@ func (db *DagBuilderHelper) NewLeafDataNode(fsNodeType pb.Data_DataType) (node i
 
 	// Convert this leaf to a `FilestoreNode` if needed.
 	node = db.ProcessFileStore(node, dataSize)
-
 	return node, dataSize, nil
 }
 
@@ -409,4 +408,73 @@ func (n *FSNodeOverDag) GetChild(ctx context.Context, i int, ds ipld.DAGService)
 	}
 
 	return NewFSNFromDag(pbn)
+}
+
+func NewFSNodeOverDag(fsNodeType pb.Data_DataType, cidBuilder cid.Builder) *FSNodeOverDag {
+	node := new(FSNodeOverDag)
+	node.dag = new(dag.ProtoNode)
+	node.dag.SetCidBuilder(cidBuilder)
+
+	node.file = ft.NewFSNode(fsNodeType)
+
+	return node
+}
+
+func (n *FSNodeOverDag) AddChildToFsNode(child ipld.Node, fileSize uint64, filename string) error {
+	err := n.dag.AddNodeLink(filename, child)
+	if err != nil {
+		return err
+	}
+
+	n.file.AddBlockSize(fileSize)
+	return nil
+}
+
+func (n *FSNodeOverDag) AddLinkChildToFsNode(link *ipld.Link, fileSize uint64) error {
+	if err := n.dag.AddRawLink(link.Name, link); err != nil {
+		return err
+	}
+	n.file.AddBlockSize(fileSize)
+	return nil
+}
+
+func NewLeafNode(data []byte, fsNodeType pb.Data_DataType, cidBuilder cid.Builder, rawLeaves bool) (ipld.Node, error) {
+	if len(data) > BlockSizeLimit {
+		return nil, ErrSizeLimitExceeded
+	}
+
+	if rawLeaves {
+		// Encapsulate the data in a raw node.
+		if cidBuilder == nil {
+			return dag.NewRawNode(data), nil
+		}
+		rawnode, err := dag.NewRawNodeWPrefix(data, cidBuilder)
+		if err != nil {
+			return nil, err
+		}
+		return rawnode, nil
+	}
+
+	// Encapsulate the data in UnixFS node (instead of a raw node).
+	fsNodeOverDag := NewFSNodeOverDag(fsNodeType, cidBuilder)
+	fsNodeOverDag.SetFileData(data)
+	node, err := fsNodeOverDag.Commit()
+	if err != nil {
+		return nil, err
+	}
+	// TODO: Encapsulate this sequence of calls into a function that
+	// just returns the final `ipld.Node` avoiding going through
+	// `FSNodeOverDag`.
+
+	return node, nil
+}
+
+func ProcessFileStore(node ipld.Node, dataSize uint64) ipld.Node {
+	if _, ok := node.(*dag.RawNode); ok {
+		fn := &pi.FilestoreNode{
+			Node: node,
+		}
+		return fn
+	}
+	return node
 }
