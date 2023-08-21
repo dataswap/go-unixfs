@@ -41,6 +41,7 @@ var DefaultLinksPerBlock = roughLinkBlockSize / roughLinkSize
 // Deprecated: use github.com/ipfs/boxo/ipld/unixfs/importer/helpers.ErrSizeLimitExceeded
 var ErrSizeLimitExceeded = fmt.Errorf("object size limit exceeded")
 
+// Define the Helper interface with all methods from the DagBuilderHelper interface
 type Helper interface {
 	Done() bool
 	Next() ([]byte, error)

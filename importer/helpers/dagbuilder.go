@@ -337,6 +337,7 @@ func NewFSNFromDag(nd *dag.ProtoNode) (*FSNodeOverDag, error) {
 // `ft.FSNode` stores its file size (that is, not the size of the
 // node but the size of the file data that it is storing at the
 // UnixFS layer). The child is also stored in the `DAGService`.
+// Modify the input parameter of the AddChild method from *DagBuilderHelper to the Helper interface.
 func (n *FSNodeOverDag) AddChild(child ipld.Node, fileSize uint64, db Helper) error {
 	err := n.dag.AddNodeLink("", child)
 	if err != nil {
@@ -349,6 +350,7 @@ func (n *FSNodeOverDag) AddChild(child ipld.Node, fileSize uint64, db Helper) er
 }
 
 // RemoveChild deletes the child node at the given index.
+// Modify the input parameter of the RemoveChild method from *DagBuilderHelper to the Helper interface.
 func (n *FSNodeOverDag) RemoveChild(index int, dbh Helper) {
 	n.file.RemoveBlockSize(index)
 	n.dag.SetLinks(append(n.dag.Links()[:index], n.dag.Links()[index+1:]...))
@@ -410,6 +412,7 @@ func (n *FSNodeOverDag) GetChild(ctx context.Context, i int, ds ipld.DAGService)
 	return NewFSNFromDag(pbn)
 }
 
+// Define the NewFSNodeOverDag function based on the modification of the DagBuilderHelper.NewFSNodeOverDag method.
 func NewFSNodeOverDag(fsNodeType pb.Data_DataType, cidBuilder cid.Builder) *FSNodeOverDag {
 	node := new(FSNodeOverDag)
 	node.dag = new(dag.ProtoNode)
@@ -420,6 +423,8 @@ func NewFSNodeOverDag(fsNodeType pb.Data_DataType, cidBuilder cid.Builder) *FSNo
 	return node
 }
 
+// Define the AddChildToFsNode method for FSNodeOverDag based on the modification of the AddChild method,
+// with the parameters filename and node, without writing to the helper's ipld.DAGService.
 func (n *FSNodeOverDag) AddChildToFsNode(child ipld.Node, fileSize uint64, filename string) error {
 	err := n.dag.AddNodeLink(filename, child)
 	if err != nil {
@@ -430,6 +435,7 @@ func (n *FSNodeOverDag) AddChildToFsNode(child ipld.Node, fileSize uint64, filen
 	return nil
 }
 
+// Define the AddLinkChildToFsNode method for FSNodeOverDag to add an ipld.Link to the FSNodeOverDag.
 func (n *FSNodeOverDag) AddLinkChildToFsNode(link *ipld.Link, fileSize uint64) error {
 	if err := n.dag.AddRawLink(link.Name, link); err != nil {
 		return err
@@ -438,6 +444,8 @@ func (n *FSNodeOverDag) AddLinkChildToFsNode(link *ipld.Link, fileSize uint64) e
 	return nil
 }
 
+// Implement the NewLeafNode function to generate a node without creating a helper,
+// based on the modification of DagBuilderHelper.NewLeafNode.
 func NewLeafNode(data []byte, fsNodeType pb.Data_DataType, cidBuilder cid.Builder, rawLeaves bool) (ipld.Node, error) {
 	if len(data) > BlockSizeLimit {
 		return nil, ErrSizeLimitExceeded
@@ -469,6 +477,7 @@ func NewLeafNode(data []byte, fsNodeType pb.Data_DataType, cidBuilder cid.Builde
 	return node, nil
 }
 
+// Implement the ProcessFileStore function based on the modification of DagBuilderHelper.ProcessFileStore.
 func ProcessFileStore(node ipld.Node, dataSize uint64) ipld.Node {
 	if _, ok := node.(*dag.RawNode); ok {
 		fn := &pi.FilestoreNode{
